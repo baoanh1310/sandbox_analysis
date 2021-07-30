@@ -1,0 +1,7 @@
+node_modules
+draft.txt
+result.txt
+result_v2.txt
+*.csv
+*.txt
+test.js
