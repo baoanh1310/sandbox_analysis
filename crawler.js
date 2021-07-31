@@ -19,7 +19,7 @@ async function app() {
   console.log("Number props: ", numOfProposals);
 
   const content = [];
-  for (var i = numOfProposals-1; i >= 90; i--) {
+  for (var i = numOfProposals-1; i >= 0; i--) {
     console.log("Proposal: ", i);
     var info = await getSpecific(URL, i, month);
     var Timestamp = await getTimeFromForum(info.TopicLink);
