@@ -22,6 +22,10 @@ async function app() {
   for (var i = numOfProposals-1; i >= 0; i--) {
     console.log("Proposal: ", i);
     var info = await getSpecific(URL, i, month);
+    if (info.isVoting) {
+      content.push(info);
+      continue;
+    }
     if (!info.isThisMonth && info.Payout > 0) {
       break;
     } else {
@@ -119,6 +123,7 @@ async function getSpecific(url, id, month) {
     let ProposalID = id;
     let Status = "";
     let isApproved = false;
+    let isVoting = false;
     let PayoutText = "";
     let Payout = 0;
     let TopicLink = "";
@@ -142,6 +147,7 @@ async function getSpecific(url, id, month) {
     try {
       Status = document.getElementsByTagName("main")[0].childNodes[0].childNodes[0].childNodes[1].childNodes[0].childNodes[1].innerText;
       isApproved = (Status === "Approved");
+      isVoting = (Status === "Voting is in progress");
     } catch (err) {
       console.log(err);
     }
@@ -182,7 +188,7 @@ async function getSpecific(url, id, month) {
       console.log(err);
     }
 
-    return ({ProposalID, isApproved, Status, Payout, ProposalType, TopicLink, Target, Proposer, isThisMonth});
+    return ({ProposalID, isApproved, isVoting, Status, Payout, ProposalType, TopicLink, Target, Proposer, isThisMonth});
   }, month, id);
 
   await browser.close();
