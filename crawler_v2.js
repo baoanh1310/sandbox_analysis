@@ -29,8 +29,7 @@ async function getInput() {
 
 async function app() {
   console.time('Time');
-  // let d = await new Date();
-  // let m = await d.getMonth() + 1;
+
   let input = await getInput();
   let m = input.month;
   let y = input.year;
@@ -44,6 +43,7 @@ async function app() {
   console.log("Number props: ", numOfProposals);
 
   let upperbound = numOfProposals - 1;
+  let lowerbound = 0;
   let rawData = await fs.readFileSync('db.json');
   let db = JSON.parse(rawData);
   try {
@@ -55,15 +55,32 @@ async function app() {
     upperbound = endValue;
   }
 
+  let prevMonthValue = -1;
+  let prevMonth = -1;
+  if (m == 1) {
+    prevMonth = 12;
+  } else {
+    prevMonth = m - 1;
+  }
+  let prevKey = y.toString() + "-" + (prevMonth).toString();
+  try {
+    prevMonthValue = db["v2"][prevKey];
+  } catch(err) {
+    console.log(err);
+  }
+  if (prevMonthValue > 0) {
+    lowerbound = prevMonthValue;
+  }
+
   const content = [];
-  for (var i = upperbound; i >= 0; i--) {
+  for (var i = upperbound; i >= lowerbound; i--) {
     console.log("Proposal: ", i);
     var info = await getSpecific(URL, i, month);
-    if (info.isVoting) {
-      content.push(info);
-      continue;
-    }
-    if (!info.isThisMonth && info.Payout > 0) {
+    // if (info.isVoting) {
+    //   content.push(info);
+    //   continue;
+    // }
+    if (!info.isThisMonth && info.Payout > 0 && lowerbound == 0) {
       break;
     } else {
       content.push(info);
@@ -79,19 +96,32 @@ async function app() {
   let approveList = content.map(x => x.isApproved);
   numApprove = approveList.filter(x => x === true).length;
 
-  let rewards = content.map(x => x.Payout);
-  rewards = rewards.filter(x => x > 0);
+  // let rewards = content.map(x => x.Payout);
+  // rewards = rewards.filter(x => x > 0);
+  //
+  // maxReward = rewards[0];
+  // for (var i = 0; i < rewards.length; i++) {
+  //   total += rewards[i];
+  //   if (rewards[i] > maxReward) {
+  //     maxReward = rewards[i];
+  //   }
+  // }
+  //
+  // avgReward = total / rewards.length;
+  // avgReward = Math.round(avgReward * 100) / 100;
 
-  maxReward = rewards[0];
-  for (var i = 0; i < rewards.length; i++) {
-    total += rewards[i];
-    if (rewards[i] > maxReward) {
-      maxReward = rewards[i];
+  for (prop of content) {
+    if (prop.isApproved && prop.ProposalType === "Payout") {
+      total += prop.Payout;
+      if (prop.Payout > maxReward) {
+        maxReward = prop.Payout;
+      }
     }
   }
-
-  avgReward = total / rewards.length;
-  avgReward = Math.round(avgReward * 100) / 100;
+  if (total > 0) {
+    avgReward = total / numApprove;
+    avgReward = Math.round(avgReward * 100) / 100;
+  }
 
   console.log("Total rewards: ", total);
   console.log("Max rewards: ", maxReward);
@@ -209,7 +239,12 @@ async function getSpecific(url, id, month) {
       console.log(err);
     }
 
-    isThisMonth = TopicLink.includes(month);
+    try {
+      isThisMonth = TopicLink.includes(month);
+    } catch (err) {
+      console.log(err);
+    }
+
 
     // get target
     try {
