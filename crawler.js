@@ -29,11 +29,11 @@ async function getInput() {
 
 async function app() {
   console.time('Time');
-  // let d = await new Date();
-  // let m = await d.getMonth() + 1;
   let input = await getInput();
   let m = input.month;
   let y = input.year;
+  let key = y.toString() + "-" + m.toString();
+  let endValue = -1;
 
   let month = months[m];
   console.log("Choosen month: ", m);
@@ -42,9 +42,20 @@ async function app() {
   const numOfProposals = await getNumberProposals(URL);
   console.log("Number props: ", numOfProposals);
 
-  /*
+  let upperbound = numOfProposals - 1;
+  let rawData = await fs.readFileSync('db.json');
+  let db = JSON.parse(rawData);
+  try {
+    endValue = db["v1"][key];
+  } catch (err) {
+    console.log(err);
+  }
+  if (endValue > 0) {
+    upperbound = endValue;
+  }
+
   const content = [];
-  for (var i = numOfProposals-1; i >= 0; i--) {
+  for (var i = upperbound; i >= 0; i--) {
     console.log("Proposal: ", i);
     var info = await getSpecific(URL, i, month);
     var Timestamp = await getTimeFromForum(info.TopicLink);
@@ -105,7 +116,6 @@ async function app() {
     if (err) throw err;
     console.log('CSV Saved!');
   });
-*/
 
   console.timeEnd('Time');
 }

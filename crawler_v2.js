@@ -1,6 +1,7 @@
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 const { Parser } = require("json2csv");
+const prompt = require('prompt-sync')();
 
 const URL = 'https://www.sputnik.fund/#/dao/sandbox.sputnikdao.near';
 
@@ -8,18 +9,54 @@ const months = {1: 'jan', 2: 'feb', 3: 'mar', 4: 'apr', 5: 'may',
                 6: 'jun', 7: 'jul', 8: 'aug', 9: 'sep', 10: 'oct',
                 11: 'nov', 12: 'dec'};
 
+async function getInput() {
+  let month = 0;
+  while (month < 1 || month > 12) {
+    month = await Number(prompt("Enter month (1-12): "));
+    if (month < 1 || month > 12) {
+      console.log("Month input must between 1 and 12");
+    }
+  }
+  let year = 2020;
+  while (year < 2021) {
+    year = await Number(prompt("Enter year: "));
+    if (year < 2021) {
+      console.log("Year input must be greater or equal to 2021");
+    }
+  }
+  return {month: month, year: year};
+}
+
 async function app() {
   console.time('Time');
-  let d = await new Date();
-  let m = await d.getMonth() + 1;
+  // let d = await new Date();
+  // let m = await d.getMonth() + 1;
+  let input = await getInput();
+  let m = input.month;
+  let y = input.year;
+  let key = y.toString() + "-" + m.toString();
+  let endValue = -1;
   let month = months[m];
-  console.log("This month: ", m);
+  console.log("Choosen month: ", m);
+  console.log("Choosen year: ", y);
 
   const numOfProposals = await getNumberProposals(URL);
   console.log("Number props: ", numOfProposals);
 
+  let upperbound = numOfProposals - 1;
+  let rawData = await fs.readFileSync('db.json');
+  let db = JSON.parse(rawData);
+  try {
+    endValue = db["v2"][key];
+  } catch (err) {
+    console.log(err);
+  }
+  if (endValue > 0) {
+    upperbound = endValue;
+  }
+
   const content = [];
-  for (var i = numOfProposals-1; i >= 0; i--) {
+  for (var i = upperbound; i >= 0; i--) {
     console.log("Proposal: ", i);
     var info = await getSpecific(URL, i, month);
     if (info.isVoting) {
