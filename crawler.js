@@ -1,6 +1,7 @@
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 const { Parser } = require("json2csv");
+const prompt = require('prompt-sync')();
 
 const URL = 'https://www.sputnik.fund/#/dao/sandbox.sputnikdao.near';
 
@@ -10,10 +11,12 @@ const months = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May',
 
 async function app() {
   console.time('Time');
-  let d = await new Date();
-  let m = await d.getMonth() + 1;
+  // let d = await new Date();
+  // let m = await d.getMonth() + 1;
+  let m = await Number(prompt("Enter month (1-12): "));
+
   let month = months[m];
-  console.log("This month: ", m);
+  console.log("Choosen month: ", m);
 
   const numOfProposals = await getNumberProposals(URL);
   console.log("Number props: ", numOfProposals);
@@ -80,6 +83,7 @@ async function app() {
     if (err) throw err;
     console.log('CSV Saved!');
   });
+  
 
   console.timeEnd('Time');
 }
