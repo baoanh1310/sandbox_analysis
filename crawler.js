@@ -9,18 +9,40 @@ const months = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May',
                 6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct',
                 11: 'Nov', 12: 'Dec'};
 
+async function getInput() {
+  let month = 0;
+  while (month < 1 || month > 12) {
+    month = await Number(prompt("Enter month (1-12): "));
+    if (month < 1 || month > 12) {
+      console.log("Month input must between 1 and 12");
+    }
+  }
+  let year = 2020;
+  while (year < 2021) {
+    year = await Number(prompt("Enter year: "));
+    if (year < 2021) {
+      console.log("Year input must be greater or equal to 2021");
+    }
+  }
+  return {month: month, year: year};
+}
+
 async function app() {
   console.time('Time');
   // let d = await new Date();
   // let m = await d.getMonth() + 1;
-  let m = await Number(prompt("Enter month (1-12): "));
+  let input = await getInput();
+  let m = input.month;
+  let y = input.year;
 
   let month = months[m];
   console.log("Choosen month: ", m);
+  console.log("Choosen year: ", y);
 
   const numOfProposals = await getNumberProposals(URL);
   console.log("Number props: ", numOfProposals);
 
+  /*
   const content = [];
   for (var i = numOfProposals-1; i >= 0; i--) {
     console.log("Proposal: ", i);
@@ -83,7 +105,7 @@ async function app() {
     if (err) throw err;
     console.log('CSV Saved!');
   });
-  
+*/
 
   console.timeEnd('Time');
 }
