@@ -43,6 +43,7 @@ async function app() {
   console.log("Number props: ", numOfProposals);
 
   let upperbound = numOfProposals - 1;
+  let lowerbound = 0;
   let rawData = await fs.readFileSync('db.json');
   let db = JSON.parse(rawData);
   try {
@@ -55,7 +56,7 @@ async function app() {
   }
 
   const content = [];
-  for (var i = upperbound; i >= 0; i--) {
+  for (var i = upperbound; i >= lowerbound; i--) {
     console.log("Proposal: ", i);
     var info = await getSpecific(URL, i, month);
     var Timestamp = await getTimeFromForum(info.TopicLink);

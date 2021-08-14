@@ -83,7 +83,9 @@ async function app() {
     if (!info.isThisMonth && info.Payout > 0 && lowerbound == 0) {
       break;
     } else {
-      content.push(info);
+      if (info.isThisMonth) {
+        content.push(info);
+      }
     }
   }
 
